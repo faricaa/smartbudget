@@ -675,6 +675,27 @@
             <div class="content-area">
                 <!-- Dashboard Page -->
                 <div id="dashboardPage" class="page-content">
+                    <!-- Filter Periode -->
+                    <div class="stat-card mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <label class="form-label mb-0"><i class="bi bi-calendar-range"></i> Periode Tampilan</label>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="dashboardPeriod" id="periodDaily" value="daily">
+                                    <label class="btn btn-outline-primary" for="periodDaily">Harian</label>
+                                    
+                                    <input type="radio" class="btn-check" name="dashboardPeriod" id="periodWeekly" value="weekly">
+                                    <label class="btn btn-outline-primary" for="periodWeekly">Mingguan</label>
+                                    
+                                    <input type="radio" class="btn-check" name="dashboardPeriod" id="periodMonthly" value="monthly" checked>
+                                    <label class="btn btn-outline-primary" for="periodMonthly">Bulanan</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-4">
                             <div class="stat-card">
@@ -685,7 +706,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-card-value text-success-custom" id="totalIncome">Rp 0</div>
-                                <div class="stat-card-label">Bulan ini</div>
+                                <div class="stat-card-label" id="incomePeriodLabel">Bulan ini</div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -697,7 +718,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-card-value text-danger-custom" id="totalExpense">Rp 0</div>
-                                <div class="stat-card-label">Bulan ini</div>
+                                <div class="stat-card-label" id="expensePeriodLabel">Bulan ini</div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -709,7 +730,7 @@
                                     </div>
                                 </div>
                                 <div class="stat-card-value" style="color: var(--secondary-color);" id="remainingBudget">Rp 0</div>
-                                <div class="stat-card-label">Bulan ini</div>
+                                <div class="stat-card-label" id="budgetPeriodLabel">Bulan ini</div>
                             </div>
                         </div>
                     </div>
@@ -805,6 +826,13 @@
                 <div id="expensePage" class="page-content hidden">
                     <div class="row">
                         <div class="col-md-6">
+                            <div class="stat-card mb-3">
+                                <h6 class="mb-3"><i class="bi bi-lightning-charge"></i> Pilih Cepat dari Kategori</h6>
+                                <div id="quickCategorySelect">
+                                    <p class="text-muted small">Klik kategori untuk input cepat</p>
+                                </div>
+                            </div>
+                            
                             <div class="stat-card">
                                 <h5 class="mb-4"><i class="bi bi-plus-circle"></i> Tambah Pengeluaran</h5>
                                 <form id="expenseForm">
@@ -814,9 +842,10 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="expenseCategory" class="form-label">Kategori</label>
-                                        <select class="form-select" id="expenseCategory" required>
-                                            <option value="">Pilih Kategori</option>
-                                        </select>
+                                        <input list="categoryOptions" class="form-control" id="expenseCategory" placeholder="Pilih atau ketik kategori" required>
+                                        <datalist id="categoryOptions">
+                                        </datalist>
+                                        <small class="text-muted">Anda bisa memilih dari daftar atau mengetik manual</small>
                                     </div>
                                     <div class="mb-3">
                                         <label for="expenseAmount" class="form-label">Nominal</label>
@@ -851,7 +880,17 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="stat-card">
-                                <h5 class="mb-4"><i class="bi bi-bullseye"></i> Target Tabungan</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0"><i class="bi bi-bullseye"></i> Target Tabungan</h5>
+                                    <div id="savingsTargetActions" class="hidden">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editSavingsTarget()">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSavingsTarget()">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                    </div>
+                                </div>
                                 <form id="savingsForm">
                                     <div class="mb-3">
                                         <label for="savingsGoal" class="form-label">Tujuan Tabungan</label>
@@ -874,7 +913,7 @@
                                         <label for="savingsDuration" class="form-label">Durasi (dalam periode)</label>
                                         <input type="number" class="form-control" id="savingsDuration" placeholder="Contoh: 12 untuk 12 bulan" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary-custom w-100">
+                                    <button type="submit" class="btn btn-primary-custom w-100" id="savingsFormBtn">
                                         <i class="bi bi-save"></i> Simpan Target
                                     </button>
                                 </form>
@@ -903,6 +942,13 @@
                                         <i class="bi bi-cash-coin"></i> Tambah Tabungan
                                     </button>
                                 </form>
+                            </div>
+                            
+                            <div class="stat-card mt-3">
+                                <h6 class="mb-3"><i class="bi bi-list-ul"></i> Riwayat Tabungan</h6>
+                                <div id="savingsHistoryList">
+                                    <p class="text-muted small">Belum ada riwayat tabungan</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1392,35 +1438,67 @@
             showLoading();
             
             const userData = getUserData(currentUser.email);
-            const currentMonth = getCurrentMonth();
-            const today = getCurrentDate();
+            const selectedPeriod = document.querySelector('input[name="dashboardPeriod"]:checked')?.value || 'monthly';
             
-            // Calculate monthly totals
-            const monthlyIncome = userData.income
-                .filter(i => i.date.startsWith(currentMonth))
+            let startDate, endDate;
+            const today = new Date();
+            
+            if (selectedPeriod === 'daily') {
+                startDate = endDate = getCurrentDate();
+            } else if (selectedPeriod === 'weekly') {
+                const dayOfWeek = today.getDay();
+                const monday = new Date(today);
+                monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                startDate = monday.toISOString().split('T')[0];
+                
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                endDate = sunday.toISOString().split('T')[0];
+            } else {
+                // monthly
+                startDate = getCurrentMonth() + '-01';
+                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                endDate = lastDay.toISOString().split('T')[0];
+            }
+            
+            // Filter data based on period
+            const periodIncome = userData.income
+                .filter(i => i.date >= startDate && i.date <= endDate)
                 .reduce((sum, i) => sum + Number(i.amount), 0);
             
-            const monthlyExpense = userData.expenses
-                .filter(e => e.date.startsWith(currentMonth))
+            const periodExpense = userData.expenses
+                .filter(e => e.date >= startDate && e.date <= endDate)
                 .reduce((sum, e) => sum + Number(e.amount), 0);
             
-            const monthlyRemaining = monthlyIncome - monthlyExpense;
+            const periodRemaining = periodIncome - periodExpense;
             
-            // Calculate daily totals
+            // Update labels
+            const periodLabels = {
+                daily: 'Hari ini',
+                weekly: 'Minggu ini',
+                monthly: 'Bulan ini'
+            };
+            
+            document.getElementById('incomePeriodLabel').textContent = periodLabels[selectedPeriod];
+            document.getElementById('expensePeriodLabel').textContent = periodLabels[selectedPeriod];
+            document.getElementById('budgetPeriodLabel').textContent = periodLabels[selectedPeriod];
+            
+            // Calculate daily totals for "Budget Hari Ini" section
+            const todayDate = getCurrentDate();
             const dailyIncome = userData.income
-                .filter(i => i.date === today)
+                .filter(i => i.date === todayDate)
                 .reduce((sum, i) => sum + Number(i.amount), 0);
             
             const dailyExpense = userData.expenses
-                .filter(e => e.date === today)
+                .filter(e => e.date === todayDate)
                 .reduce((sum, e) => sum + Number(e.amount), 0);
             
             const dailyRemaining = dailyIncome - dailyExpense;
             
             // Update UI
-            document.getElementById('totalIncome').textContent = formatCurrency(monthlyIncome);
-            document.getElementById('totalExpense').textContent = formatCurrency(monthlyExpense);
-            document.getElementById('remainingBudget').textContent = formatCurrency(monthlyRemaining);
+            document.getElementById('totalIncome').textContent = formatCurrency(periodIncome);
+            document.getElementById('totalExpense').textContent = formatCurrency(periodExpense);
+            document.getElementById('remainingBudget').textContent = formatCurrency(periodRemaining);
             
             document.getElementById('todayIncome').textContent = formatCurrency(dailyIncome);
             document.getElementById('todayExpense').textContent = formatCurrency(dailyExpense);
@@ -1428,9 +1506,9 @@
             
             // Update remaining budget color
             const remainingEl = document.getElementById('remainingBudget');
-            if (monthlyRemaining < 0) {
+            if (periodRemaining < 0) {
                 remainingEl.style.color = 'var(--danger-color)';
-            } else if (monthlyRemaining < monthlyIncome * 0.2) {
+            } else if (periodRemaining < periodIncome * 0.2) {
                 remainingEl.style.color = 'var(--warning-color)';
             } else {
                 remainingEl.style.color = 'var(--secondary-color)';
@@ -1502,6 +1580,13 @@
             hideLoading();
         }
 
+        // Event listener untuk filter periode
+        document.querySelectorAll('input[name="dashboardPeriod"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                loadDashboard();
+            });
+        });
+
         // ============= INCOME =============
         function loadIncome() {
             const userData = getUserData(currentUser.email);
@@ -1522,6 +1607,14 @@
                         </div>
                         <div class="transaction-amount">
                             <div class="amount text-success-custom">${formatCurrency(income.amount)}</div>
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editIncome(${income.id})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteIncome(${income.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -1532,6 +1625,38 @@
                         <p>Belum ada pemasukan tercatat</p>
                     </div>
                 `;
+            }
+        }
+
+        let editingIncomeId = null;
+
+        function editIncome(id) {
+            const userData = getUserData(currentUser.email);
+            const income = userData.income.find(i => i.id === id);
+            
+            if (income) {
+                document.getElementById('incomeSource').value = income.source;
+                document.getElementById('incomeAmount').value = income.amount;
+                document.getElementById('incomeDate').value = income.date;
+                editingIncomeId = id;
+                
+                const submitBtn = document.querySelector('#incomeForm button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Update Pemasukan';
+                submitBtn.classList.remove('btn-primary-custom');
+                submitBtn.classList.add('btn-warning');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function deleteIncome(id) {
+            if (confirm('Yakin ingin menghapus pemasukan ini?')) {
+                const userData = getUserData(currentUser.email);
+                userData.income = userData.income.filter(i => i.id !== id);
+                saveUserData(currentUser.email, userData);
+                showAlert('Pemasukan berhasil dihapus', 'info');
+                loadIncome();
+                loadDashboard();
             }
         }
 
@@ -1548,27 +1673,60 @@
             }
             
             const userData = getUserData(currentUser.email);
-            userData.income.push({
-                id: Date.now(),
-                source: source,
-                amount: Number(amount),
-                date: date
-            });
+            
+            if (editingIncomeId) {
+                // Update existing
+                const index = userData.income.findIndex(i => i.id === editingIncomeId);
+                if (index !== -1) {
+                    userData.income[index] = {
+                        id: editingIncomeId,
+                        source: source,
+                        amount: Number(amount),
+                        date: date
+                    };
+                    showAlert('Pemasukan berhasil diupdate', 'success');
+                }
+                editingIncomeId = null;
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Simpan Pemasukan';
+                submitBtn.classList.remove('btn-warning');
+                submitBtn.classList.add('btn-primary-custom');
+            } else {
+                // Add new
+                userData.income.push({
+                    id: Date.now(),
+                    source: source,
+                    amount: Number(amount),
+                    date: date
+                });
+                showAlert('Pemasukan berhasil ditambahkan', 'success');
+            }
             
             saveUserData(currentUser.email, userData);
-            showAlert('Pemasukan berhasil ditambahkan', 'success');
             this.reset();
             loadIncome();
+            loadDashboard();
         });
 
         // ============= EXPENSE =============
         function loadExpense() {
             const userData = getUserData(currentUser.email);
             
-            // Load categories
-            const categorySelect = document.getElementById('expenseCategory');
-            categorySelect.innerHTML = '<option value="">Pilih Kategori</option>' +
-                userData.categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
+            // Load categories untuk datalist
+            const categoryDatalist = document.getElementById('categoryOptions');
+            categoryDatalist.innerHTML = userData.categories.map(cat => `<option value="${cat.name}">`).join('');
+            
+            // Load quick select categories
+            const quickSelectHtml = userData.categories.map(cat => {
+                const badgeClass = cat.type === 'wajib' ? 'btn-outline-danger' : 'btn-outline-primary';
+                return `
+                    <button type="button" class="btn btn-sm ${badgeClass} m-1" onclick="quickSelectCategory('${cat.name.replace(/'/g, "\\'")}', ${cat.defaultPrice || 0})">
+                        ${cat.name} ${cat.defaultPrice > 0 ? `(${formatCurrency(cat.defaultPrice)})` : ''}
+                    </button>
+                `;
+            }).join('');
+            document.getElementById('quickCategorySelect').innerHTML = quickSelectHtml || '<p class="text-muted small">Belum ada kategori</p>';
             
             document.getElementById('expenseDate').value = getCurrentDate();
             
@@ -1587,6 +1745,14 @@
                         </div>
                         <div class="transaction-amount">
                             <div class="amount text-danger-custom">${formatCurrency(expense.amount)}</div>
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editExpense(${expense.id})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteExpense(${expense.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -1600,11 +1766,56 @@
             }
         }
 
+        // Quick select category function
+        function quickSelectCategory(categoryName, defaultPrice) {
+            document.getElementById('expenseName').value = categoryName;
+            document.getElementById('expenseCategory').value = categoryName;
+            if (defaultPrice > 0) {
+                document.getElementById('expenseAmount').value = defaultPrice;
+            }
+            document.getElementById('expenseName').focus();
+            // Scroll to form
+            document.getElementById('expenseForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        let editingExpenseId = null;
+
+        function editExpense(id) {
+            const userData = getUserData(currentUser.email);
+            const expense = userData.expenses.find(e => e.id === id);
+            
+            if (expense) {
+                document.getElementById('expenseName').value = expense.name;
+                document.getElementById('expenseCategory').value = expense.category;
+                document.getElementById('expenseAmount').value = expense.amount;
+                document.getElementById('expenseDate').value = expense.date;
+                editingExpenseId = id;
+                
+                const submitBtn = document.querySelector('#expenseForm button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Update Pengeluaran';
+                submitBtn.classList.remove('btn-primary-custom');
+                submitBtn.classList.add('btn-warning');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function deleteExpense(id) {
+            if (confirm('Yakin ingin menghapus pengeluaran ini?')) {
+                const userData = getUserData(currentUser.email);
+                userData.expenses = userData.expenses.filter(e => e.id !== id);
+                saveUserData(currentUser.email, userData);
+                showAlert('Pengeluaran berhasil dihapus', 'info');
+                loadExpense();
+                loadDashboard();
+            }
+        }
+
         document.getElementById('expenseForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const name = document.getElementById('expenseName').value.trim();
-            const category = document.getElementById('expenseCategory').value;
+            const category = document.getElementById('expenseCategory').value.trim();
             const amount = document.getElementById('expenseAmount').value;
             const date = document.getElementById('expenseDate').value;
             
@@ -1614,26 +1825,69 @@
             }
             
             const userData = getUserData(currentUser.email);
-            userData.expenses.push({
-                id: Date.now(),
-                name: name,
-                category: category,
-                amount: Number(amount),
-                date: date
-            });
+            
+            if (editingExpenseId) {
+                // Update existing
+                const index = userData.expenses.findIndex(e => e.id === editingExpenseId);
+                if (index !== -1) {
+                    userData.expenses[index] = {
+                        id: editingExpenseId,
+                        name: name,
+                        category: category,
+                        amount: Number(amount),
+                        date: date
+                    };
+                    showAlert('Pengeluaran berhasil diupdate', 'success');
+                }
+                editingExpenseId = null;
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Simpan Pengeluaran';
+                submitBtn.classList.remove('btn-warning');
+                submitBtn.classList.add('btn-primary-custom');
+            } else {
+                // Add new
+                userData.expenses.push({
+                    id: Date.now(),
+                    name: name,
+                    category: category,
+                    amount: Number(amount),
+                    date: date
+                });
+                showAlert('Pengeluaran berhasil ditambahkan', 'success');
+            }
             
             saveUserData(currentUser.email, userData);
-            showAlert('Pengeluaran berhasil ditambahkan', 'success');
             this.reset();
             loadExpense();
+            loadDashboard();
         });
 
         // ============= SAVINGS =============
+        let editingSavingsTarget = false;
+
         function loadSavings() {
             const userData = getUserData(currentUser.email);
             document.getElementById('savingsAddDate').value = getCurrentDate();
             
+            // Show/hide action buttons and manage form state
             if (userData.savings) {
+                document.getElementById('savingsTargetActions').classList.remove('hidden');
+                
+                if (!editingSavingsTarget) {
+                    // Disable form when target already exists
+                    document.getElementById('savingsGoal').value = userData.savings.goal;
+                    document.getElementById('savingsTarget').value = userData.savings.target;
+                    document.getElementById('savingsPeriod').value = userData.savings.period;
+                    document.getElementById('savingsDuration').value = userData.savings.duration;
+                    
+                    document.getElementById('savingsGoal').disabled = true;
+                    document.getElementById('savingsTarget').disabled = true;
+                    document.getElementById('savingsPeriod').disabled = true;
+                    document.getElementById('savingsDuration').disabled = true;
+                    document.getElementById('savingsFormBtn').classList.add('hidden');
+                }
+                
                 const currentSavings = userData.savingsHistory.reduce((sum, s) => sum + Number(s.amount), 0);
                 const percentage = (currentSavings / userData.savings.target * 100).toFixed(1);
                 const remaining = userData.savings.target - currentSavings;
@@ -1666,7 +1920,97 @@
                     ${remaining > 0 ? `<p class="text-muted small">Sisa: ${formatCurrency(remaining)}</p>` : '<p class="text-success"><strong>Target tercapai! 🎉</strong></p>'}
                 `;
             } else {
+                document.getElementById('savingsTargetActions').classList.add('hidden');
+                document.getElementById('savingsGoal').disabled = false;
+                document.getElementById('savingsTarget').disabled = false;
+                document.getElementById('savingsPeriod').disabled = false;
+                document.getElementById('savingsDuration').disabled = false;
+                document.getElementById('savingsFormBtn').classList.remove('hidden');
+                
                 document.getElementById('savingsDetail').innerHTML = '<p class="text-muted">Belum ada target tabungan yang ditentukan</p>';
+            }
+            
+            // Load savings history
+            if (userData.savingsHistory.length > 0) {
+                const sortedHistory = [...userData.savingsHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+                document.getElementById('savingsHistoryList').innerHTML = sortedHistory.map(saving => `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong class="text-success-custom">${formatCurrency(saving.amount)}</strong>
+                            <br>
+                            <small class="text-muted">${formatDate(saving.date)}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editSavingsHistory(${saving.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSavingsHistory(${saving.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('savingsHistoryList').innerHTML = '<p class="text-muted small">Belum ada riwayat tabungan</p>';
+            }
+        }
+
+        function editSavingsTarget() {
+            editingSavingsTarget = true;
+            
+            document.getElementById('savingsGoal').disabled = false;
+            document.getElementById('savingsTarget').disabled = false;
+            document.getElementById('savingsPeriod').disabled = false;
+            document.getElementById('savingsDuration').disabled = false;
+            document.getElementById('savingsFormBtn').classList.remove('hidden');
+            document.getElementById('savingsFormBtn').innerHTML = '<i class="bi bi-save"></i> Update Target';
+            document.getElementById('savingsFormBtn').classList.remove('btn-primary-custom');
+            document.getElementById('savingsFormBtn').classList.add('btn-warning');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteSavingsTarget() {
+            if (confirm('Yakin ingin menghapus target tabungan? Riwayat tabungan akan tetap tersimpan.')) {
+                const userData = getUserData(currentUser.email);
+                userData.savings = null;
+                saveUserData(currentUser.email, userData);
+                showAlert('Target tabungan berhasil dihapus', 'info');
+                editingSavingsTarget = false;
+                document.getElementById('savingsForm').reset();
+                loadSavings();
+                loadDashboard();
+            }
+        }
+
+        let editingSavingsHistoryId = null;
+
+        function editSavingsHistory(id) {
+            const userData = getUserData(currentUser.email);
+            const saving = userData.savingsHistory.find(s => s.id === id);
+            
+            if (saving) {
+                document.getElementById('savingsAddAmount').value = saving.amount;
+                document.getElementById('savingsAddDate').value = saving.date;
+                editingSavingsHistoryId = id;
+                
+                const submitBtn = document.querySelector('#addSavingsForm button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Update Tabungan';
+                submitBtn.classList.remove('btn-success');
+                submitBtn.classList.add('btn-warning');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function deleteSavingsHistory(id) {
+            if (confirm('Yakin ingin menghapus riwayat tabungan ini?')) {
+                const userData = getUserData(currentUser.email);
+                userData.savingsHistory = userData.savingsHistory.filter(s => s.id !== id);
+                saveUserData(currentUser.email, userData);
+                showAlert('Riwayat tabungan berhasil dihapus', 'info');
+                loadSavings();
+                loadDashboard();
             }
         }
 
@@ -1692,8 +2036,18 @@
             };
             
             saveUserData(currentUser.email, userData);
-            showAlert('Target tabungan berhasil disimpan', 'success');
-            this.reset();
+            
+            if (editingSavingsTarget) {
+                showAlert('Target tabungan berhasil diupdate', 'success');
+                editingSavingsTarget = false;
+            } else {
+                showAlert('Target tabungan berhasil disimpan', 'success');
+            }
+            
+            document.getElementById('savingsFormBtn').innerHTML = '<i class="bi bi-save"></i> Simpan Target';
+            document.getElementById('savingsFormBtn').classList.remove('btn-warning');
+            document.getElementById('savingsFormBtn').classList.add('btn-primary-custom');
+            
             loadSavings();
             loadDashboard();
         });
@@ -1715,15 +2069,36 @@
                 return;
             }
             
-            userData.savingsHistory.push({
-                id: Date.now(),
-                amount: Number(amount),
-                date: date
-            });
+            if (editingSavingsHistoryId) {
+                // Update existing
+                const index = userData.savingsHistory.findIndex(s => s.id === editingSavingsHistoryId);
+                if (index !== -1) {
+                    userData.savingsHistory[index] = {
+                        id: editingSavingsHistoryId,
+                        amount: Number(amount),
+                        date: date
+                    };
+                    showAlert('Tabungan berhasil diupdate', 'success');
+                }
+                editingSavingsHistoryId = null;
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-cash-coin"></i> Tambah Tabungan';
+                submitBtn.classList.remove('btn-warning');
+                submitBtn.classList.add('btn-success');
+            } else {
+                // Add new
+                userData.savingsHistory.push({
+                    id: Date.now(),
+                    amount: Number(amount),
+                    date: date
+                });
+                showAlert('Tabungan berhasil ditambahkan', 'success');
+            }
             
             saveUserData(currentUser.email, userData);
-            showAlert('Tabungan berhasil ditambahkan', 'success');
             this.reset();
+            document.getElementById('savingsAddDate').value = getCurrentDate();
             loadSavings();
             loadDashboard();
         });
@@ -1900,21 +2275,75 @@
             
             let html = '<h6 class="mb-3">Kategori Wajib</h6>';
             html += wajibCategories.map(cat => `
-                <div class="category-badge wajib">
-                    ${cat.name}
-                    ${cat.defaultPrice > 0 ? ` (${formatCurrency(cat.defaultPrice)})` : ''}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div class="category-badge wajib">
+                        ${cat.name}
+                        ${cat.defaultPrice > 0 ? ` (${formatCurrency(cat.defaultPrice)})` : ''}
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${cat.id})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${cat.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
             
             html += '<h6 class="mb-3 mt-4">Kategori Tidak Wajib</h6>';
             html += tidakWajibCategories.map(cat => `
-                <div class="category-badge tidak-wajib">
-                    ${cat.name}
-                    ${cat.defaultPrice > 0 ? ` (${formatCurrency(cat.defaultPrice)})` : ''}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                    <div class="category-badge tidak-wajib">
+                        ${cat.name}
+                        ${cat.defaultPrice > 0 ? ` (${formatCurrency(cat.defaultPrice)})` : ''}
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${cat.id})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${cat.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
             
             document.getElementById('categoryList').innerHTML = html;
+        }
+
+        let editingCategoryId = null;
+
+        function editCategory(id) {
+            const userData = getUserData(currentUser.email);
+            const category = userData.categories.find(c => c.id === id);
+            
+            if (category) {
+                document.getElementById('categoryName').value = category.name;
+                document.getElementById('categoryType').value = category.type;
+                document.getElementById('categoryDefault').value = category.defaultPrice || '';
+                editingCategoryId = id;
+                
+                const submitBtn = document.querySelector('#categoryForm button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Update Kategori';
+                submitBtn.classList.remove('btn-primary-custom');
+                submitBtn.classList.add('btn-warning');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function deleteCategory(id) {
+            if (confirm('Yakin ingin menghapus kategori ini?')) {
+                const userData = getUserData(currentUser.email);
+                userData.categories = userData.categories.filter(c => c.id !== id);
+                saveUserData(currentUser.email, userData);
+                showAlert('Kategori berhasil dihapus', 'info');
+                loadCategories();
+                if (currentPage === 'expense') {
+                    loadExpense();
+                }
+            }
         }
 
         document.getElementById('categoryForm').addEventListener('submit', function(e) {
@@ -1926,22 +2355,44 @@
             
             const userData = getUserData(currentUser.email);
             
-            if (userData.categories.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-                showAlert('Kategori sudah ada', 'warning');
-                return;
+            if (editingCategoryId) {
+                const index = userData.categories.findIndex(c => c.id === editingCategoryId);
+                if (index !== -1) {
+                    userData.categories[index] = {
+                        id: editingCategoryId,
+                        name: name,
+                        type: type,
+                        defaultPrice: Number(defaultPrice)
+                    };
+                    showAlert('Kategori berhasil diupdate', 'success');
+                }
+                editingCategoryId = null;
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Tambah Kategori';
+                submitBtn.classList.remove('btn-warning');
+                submitBtn.classList.add('btn-primary-custom');
+            } else {
+                if (userData.categories.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+                    showAlert('Kategori sudah ada', 'warning');
+                    return;
+                }
+                
+                userData.categories.push({
+                    id: Date.now(),
+                    name: name,
+                    type: type,
+                    defaultPrice: Number(defaultPrice)
+                });
+                showAlert('Kategori berhasil ditambahkan', 'success');
             }
             
-            userData.categories.push({
-                id: Date.now(),
-                name: name,
-                type: type,
-                defaultPrice: Number(defaultPrice)
-            });
-            
             saveUserData(currentUser.email, userData);
-            showAlert('Kategori berhasil ditambahkan', 'success');
             this.reset();
             loadCategories();
+            if (currentPage === 'expense') {
+                loadExpense();
+            }
         });
 
         // ============= SETTINGS =============
